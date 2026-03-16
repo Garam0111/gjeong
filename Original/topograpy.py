@@ -1,4 +1,5 @@
-# Extract topographic changes on the hemisphere (sphere) and plot them
+# This sample of code to calculate gradient of assigned scalar values at each vertex on both hemispheres. 
+# Extract topographic changes on the hemisphere (sphere) then test statistical sigificant using bootstrap sampling.
 
 import nibabel as nib
 #import scipy as sc
