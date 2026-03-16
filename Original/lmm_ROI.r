@@ -1,5 +1,5 @@
-# Run linear mixed model on freeusrfer aparc ROIs 
-# With and without quadratic terms and compare them is included. 
+# Run linear mixed model on ROI masks showing significant effect to measure anatomical changes. 
+# Calculate with and without quadratic time effect and compare them. 
 # It is generally recommended to include only linear term to reduce the complexity of model.
 
 library(lme4)
