@@ -1,68 +1,28 @@
-# This script is adapted to apply to audiotry stimuliation fMRI
-# Major adatations are converting trial info from Pyschopy from block-wise to trial-wise,
-# aligning fMRI images that there temporal dimensions are unmatched to each other.
+# This script is to calcualte the most fitted preferred numerosity and tunning width at each vertex based on
+# computational model of numerosity sensitive neuronal population. 
+# CTS (Compressive Temporal Summation) analysis was added by Garam Jeong.
+# (ref: Population coding for visual and auditory quantity in human numerotopic maps, Communications Biology, 2026
+#       Compressive Temporal Summation in Human Visual Cortex, Journal of Neuroscience, 2018  )
+
+# This script is for audiotry modality data set (original version was written for visual modality data set).
+# Major adatations are 
+# - adding additional quality control of preprocessed data set 
+# - converting the analysis time unit from block-wise to trial-wise for CTS analysis 
+# - adding CTS option to analyze_numerosity
 
 """
 EMPRISE - EMergence of PRecISE numerosity representations in the human brain
+Original scirpt written by Joram Soch, MPI Leipzig <soch@cbs.mpg.de>
 
-Joram Soch, MPI Leipzig <soch@cbs.mpg.de>
-2023-06-26, 15:31: get_onsets
-2023-06-26, 16:39: get_confounds
-2023-06-26, 18:03: get_mask_nii, get_bold_nii, get_events_tsv, get_confounds_tsv
-2023-06-29, 11:21: load_mask, load_data
-2023-06-29, 12:18: onsets_trials2blocks
-2023-07-03, 09:56: load_data_all, average_signals, correct_onsets
-2023-07-13, 10:11: average_signals
-2023-08-10, 13:59: global variables
-2023-08-21, 15:42: rewriting to OOP
-2023-08-24, 16:36: standardize_confounds
-2023-09-07, 16:20: standardize_signals
-2023-09-12, 19:23: get_bold_gii, load_surf_data, load_surf_data_all
-2023-09-14, 12:46: save_vol, save_surf
-2023-09-21, 15:11: plot_surf
-2023-09-26, 16:19: analyze_numerosity
-2023-09-28, 11:18: threshold_maps
-2023-09-28, 12:58: visualize_maps
-2023-10-05, 19:12: rewriting to OOP
-2023-10-05, 19:34: global variables
-2023-10-05, 21:24: rewriting for MPI
-2023-10-12, 12:02: threshold_maps, visualize_maps
-2023-10-16, 10:56: threshold_maps, testing
-2023-10-16, 14:41: load_data_all, load_surf_data_all, get_onsets, get_confounds
-2023-10-26, 17:56: get_model_dir, get_results_file, load_mask_data, calc_runs_scans
-2023-10-26, 21:06: get_mesh_files, get_sulc_files
-2023-11-01, 14:50: get_sulc_files
-2023-11-01, 17:53: threshold_and_cluster
-2023-11-09, 11:30: refactoring
-2023-11-17, 10:34: refactoring
-2023-11-20, 12:56: get_mesh_files
-2023-11-20, 16:02: threshold_and_cluster
-2023-11-23, 12:57: analyze_numerosity
-2023-11-28, 14:05: create_fsaverage_midthick, get_mesh_files
-2023-11-30, 19:31: threshold_AFNI_cluster
-2024-01-22, 17:08: run_GLM_analysis
-2024-01-29, 11:50: run_GLM_analysis
-2024-01-29, 15:49: threshold_SPM
-2024-03-11, 11:08: get_onsets
-2024-03-11, 15:34: run_GLM_analysis_group
-2024-03-11, 16:44: threshold_SPM_group
-2024-03-11, 17:37: refactoring
-2024-04-04, 10:22: get_onsets, get_confounds
-2024-05-14, 15:03: analyze_numerosity
-2024-05-21, 10:35: calculate_Rsq
-2024-06-25, 15:18: threshold_maps, threshold_and_cluster
-2024-06-27, 13:39: threshold_maps, threshold_and_cluster
-2024-07-01, 18:11: analyze_numerosity
-"""
-"""
-Adapted by Garam Jeong (for auditory stimuli analysis)
-2024, get_spregressor_csv
+Adapted by Garam Jeong (for auditory stimuli analysis and CTS)
+      get_spregressor_csv
       get_valid_runs
       load_surf_data_all
       get_confounds
       get_acom_confounds
       get_spregressor
-2025, analyze_numerosity
+      analyze_numerosity 
+      onsets_trials2trials
 """
 
 # import packages
@@ -1083,7 +1043,7 @@ class Model(Session):
                       audio1 session has two options ['audio1','audio1_seq']
             hemis   - list of string; ['L','R'] or ['L'] or ['R'] (default: ['L','R'])
             sh      - bool; split-half estimation (default: False)
-            CST     - bool; include compressive spatio-temporal neuronal activity model or not (default: False)
+            CST     - bool; include compressive spatio-temporal (CTS analysis) neuronal activity model or not (default: False)
             
             results - dict of dicts; results filenames
             o L     - results for left hemisphere
