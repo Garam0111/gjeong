@@ -1,12 +1,13 @@
 """
 MVPA (Multi Voxel Pattern Analysis)
 
-Use the results of first level anlaysis of each session and run MVPA at each session
-First Level Analysis: Beta value of each alphabet condition & geometry label - (sub,ses,run) is the unit of pattern analysis
+It uses the results of first level anlaysis of COCOA to run MVPA at each session
+First Level Analysis: Beta value of each alphabet condition & geometry label(ROI) - (sub,ses,run) is the unit of pattern analysis per (condition, ROI)
 
 - SVC (supportive vector classification): Leave one out cross validation, RBF/Linear Kernel, 6 class classification (6 alphabets), ROI masker (each ROI and union of ROIs)
 - save classification probability per (sub,ses,ROI) 
-- the saved result can be used for Linear mixed model (LMM) (probability ~ session*condition + (1| subject) + (session | subject)) to test longditudinal changes of classification probability.
+- the saved result tested using Linear mixed model (LMM) (probability ~ session*condition + (1| subject) + (session | subject)) to test longditudinal changes of classification probability.
+  with R
 
 ref: Multi-voxel pattern analysis for developmental cognitive neuroscientists (Guassi Moreira, 2025, Developmental Cognitive Nuerosicence)
 """
