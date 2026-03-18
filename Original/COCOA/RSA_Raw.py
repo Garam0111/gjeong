@@ -1,11 +1,12 @@
 """
 Representation Similarity Anlysis (RSA)
 
-Use the results of first level anlaysis of each session and run RSA at each session to use them for longitudinal analysis using LMM
-First Level Analysis: Beta value of each alphabet condition & geometry label - (sub,ses,run) is the unit of pattern analysis
+Use the results of first level anlaysis of each session RSA and apply longitudinal analysis using LMM (Linear Mixed Model). 
+ First Level Analysis: Beta value of each alphabet condition & geometry label(ROI) - (sub,ses,run) is the unit of pattern analysis
 
-- Calculate representation dissimilarity matrix (RDM) of 6 alphabets per (sub,ses,ROI), ROI labels includes also unions of ROIs
-- Save the result and use it as input for LMM (dissimilarity ~ session + (1|subject)+(session|subject)) 
+This script is to calculate raw represenation similiarity value with pearson correlation between alphabet conditions within a (sub,ROI).
+- Calculate representation dissimilarity matrix (RDM) of 6 alphabets per (sub,ses,ROI), ROI labels includes also unions of ROIs.
+- Save the result and use it as input for LMM (dissimilarity ~ session + (1|subject)+(session|subject)) with R.
 
 """
 import os
