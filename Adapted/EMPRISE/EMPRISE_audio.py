@@ -1,14 +1,16 @@
 # This script is to calcualte the most fitted preferred numerosity and tunning width at each vertex based on
 # computational model of numerosity sensitive neuronal population. 
 # CTS (Compressive Temporal Summation) analysis was added by Garam Jeong.
-# (ref: Population coding for visual and auditory quantity in human numerotopic maps, Communications Biology, 2026
-#       Compressive Temporal Summation in Human Visual Cortex, Journal of Neuroscience, 2018  )
 
 # This script is for audiotry modality data set (original version was written for visual modality data set).
 # Major adatations are 
 # - adding additional quality control of preprocessed data set 
 # - converting the analysis time unit from block-wise to trial-wise for CTS analysis 
 # - adding CTS option to analyze_numerosity
+
+# ref: Population coding for visual and auditory quantity in human numerotopic maps, Communications Biology, 2026
+#      Compressive Temporal Summation in Human Visual Cortex, Journal of Neuroscience, 2018  
+
 
 """
 EMPRISE - EMergence of PRecISE numerosity representations in the human brain
