@@ -1,55 +1,18 @@
 # Original Scripts Written By Joram Soch to analyze topographic distribution of numerosity sensitive neuronal population on 7T fMRI
-# Original Scripts: EMPRISE Public Scripts [https://github.com/SkeideLab/EMPRISE-analysis/tree/11ef8f593a4e895d4bd8e53d3161771a83383454/code/Python]
-# A Major adpatation: new analysis model implanted (CST model) to consider temporal property of auditory stimuli
-# Most of the minor adjustments are not reported: To spot out all adaptation, check the original code from the public repository of EMPRISE project
 
+# A Major adpatation: new analysis model implanted (CTS model) to consider temporal property of auditory stimuli
+
+# Most of the minor adjustments are not reported: To spot out all adaptations, check the original code from the public repository of EMPRISE project
+# https://github.com/SkeideLab/EMPRISE-analysis
 
 """
 NumpRF - numerosity population receptive modelling
-
-Joram Soch, MPI Leipzig <soch@cbs.mpg.de>
-2023-06-22, 14:34: log2lin, lin2log
-2023-06-22, 17:04: f_log, neuronal_signals, simulate
-2023-06-22, 17:55: hemodynamic_signals, simulate
-2023-06-22, 21:49: testing
-2023-06-26, 18:11: refactoring
-2023-06-29, 16:58: plot_task_signals
-2023-07-03, 10:26: plot_signals_axis, plot_signals_figure, debugging
-2023-07-13, 10:45: plot_signals_figure
-2023-07-13, 16:58: estimate_MLE_rgs, log2lin, lin2log
-2023-07-14, 17:54: estimate_MLE_rgs, hemodynamic_signals
-2023-08-10, 14:07: simulate, estimate_MLE_fgs
-2023-08-21, 17:50: rewriting to OOP
-2023-08-23, 09:22: estimate_MLE
-2023-08-24, 16:39: refactoring
-2023-08-28, 16:25: hemodynamic_signals, simulate, estimate_MLE
-2023-08-31, 19:38: estimate_MLE, refactoring, testing
-2023-09-07, 11:24: estimate_MLE, free_parameters
-2023-09-14, 14:14: estimate_MLE
-2023-09-18, 17:39: estimate_MLE
-2023-09-21, 11:47: estimate_MLE, free_parameters
-2023-09-26, 16:46: estimate_MLE
-2023-10-26, 17:27: MLL2Rsq
-2023-11-02, 08:01: yp2Rsq
-2023-11-02, 09:52: Rsqtest
-2023-11-02, 13:51: Rsqtest
-2023-11-07, 15:54: f_lin, fwhm2sigma
-2023-11-23, 11:33: estimate_MLE, estimate_MLE_rgs
-2023-11-27, 14:43: corrtest, Rsqtest
-2023-12-16, 13:04: Rsq2pval
-2024-02-07, 13:04: pval2Rsq
-2024-04-24, 09:37: hemodynamic_signals
-2024-05-28, 10:52: calculate_Rsq
-2024-06-25, 15:03: Rsqsig
-2024-06-27, 12:23: Rsqsig
-2024-07-01, 18:19: sig2fwhm, neuronal_signals, estimate_MLE
 """
 """
-Adapted By Garam Jeong
-2025-06, gamma_function, biphasic_gamma, apply_nonlinearity 
-2025-07, CST_Bold_prediction
-2025-07, simulate, free_parameters
-2025-07, estimate_CST_MLE
+Added By Garam Jeong
+ gamma_function, biphasic_gamma, apply_nonlinearity 
+ CST_Bold_prediction
+ estimate_CST_MLE
 """
 
 # import packages
