@@ -1,9 +1,11 @@
 # This script is to perform first level analysis and second level analysis of BIDS dataset (alphabet learning of children, not yet published).
 # Original scirpt was wirtten by Alexander Enge [https://github.com/SkeideLab/SLANG-analysis/tree/93890d2cda9aac1ded61d41ae1ed5bd27f4d4bc0/scripts]
-# Adapted by Garam Jeong to allow flexibility of running the code partially without running through from first level to the second level at once.
-# Script adapted for COCOA project to study longitudinal development of children learning language.
 
-# Run part1 GLM for each subject without paralell
+# Adapted by Garam Jeong and Johanna Finemann to allow flexibility of running the code.
+
+"""
+Univaraite analysis
+"""
 
 from pathlib import Path
 import numpy as np
