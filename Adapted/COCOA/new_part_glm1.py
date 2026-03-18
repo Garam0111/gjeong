@@ -1,6 +1,11 @@
 # Script was adjusted by Garam Jeong and Johanna Finemann
 # Original script is from Alexsander Enge, univariate.py [https://github.com/SkeideLab/SLANG-analysis/tree/93890d2cda9aac1ded61d41ae1ed5bd27f4d4bc0/scripts]
 
+"""
+First step of COCOA univariate analysis:
+First level analysis with Nilearn (Preprocessed data set should follow BIDS format)
+"""
+
 import os
 
 from pathlib import Path
