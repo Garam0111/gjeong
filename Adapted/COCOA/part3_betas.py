@@ -1,6 +1,12 @@
 # Script was adjusted by Garam Jeong and Johanna Finemann
 # Original script is from Alexsander Enge, univariate.py [https://github.com/SkeideLab/SLANG-analysis/tree/93890d2cda9aac1ded61d41ae1ed5bd27f4d4bc0/scripts]
 
+"""
+Third step of COCOA univariate analysis:
+
+Second level analysis using linear mixed model with Julia
+"""
+
 import nibabel as nib
 import numpy as np
 
