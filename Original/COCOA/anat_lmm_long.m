@@ -1,4 +1,5 @@
-% This script is to calculate statistical significant of linear mixed model effect of a longitudinal anatomy dataset using lme functions distributed with Freesurfer.
+% This script is to analyze linear mixed model (LMM) effect of a longitudinal anatomy dataset using lme functions distributed with Freesurfer in vertex level.
+% The results form clusters after correction for multiple comparision. 
 % Bernal-Rusiel J.L., Greve D.N., Reuter M., Fischl B., Sabuncu M.R., 2012. Statistical Analysis of Longitudinal Neuroimage Data with Linear Mixed Effects Models, NeuroImage 66C, pp. 249-260, 2012.
 % Bernal-Rusiel J.L., Greve D.N., Reuter M., Fischl B., Sabuncu M.R., 2013. Spatiotemporal Linear Mixed Effects Modeling for the Mass-univariate Analysis of Longitudinal Neuroimage Data, NeuroImage 81, pp 358–370, 2013. 
 
