@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # FreeSurfer Cluster-based ROI Creation Script (Both Hemispheres)
-# Script written by Jeong then adapted for general application with Calude AI.
+# Create ROI masks showing significant longitudinal changes in their anatomical geometry to apply on fMRI data. 
+
 # Usage: ./create_cluster_roi.sh <threshold> <measure> [minarea] [target_template]
 # Example: ./create_cluster_roi.sh "1.222983880411199e-04" area 50 /path/to/MNI152_template.nii.gz
 
