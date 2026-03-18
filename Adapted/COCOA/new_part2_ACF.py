@@ -1,6 +1,13 @@
 # Script was adjusted by Garam Jeong and Johanna Finemann
 # Original script is from Alexsander Enge, univariate.py [https://github.com/SkeideLab/SLANG-analysis/tree/93890d2cda9aac1ded61d41ae1ed5bd27f4d4bc0/scripts]
 
+"""
+Second step of COCOA univariate analysis:
+
+Use ACF of AFNI to calculate threshold for statistical test (FWE test)
+ref: https://afni.nimh.nih.gov/pub/dist/doc/program_help/3dClustSim.html
+"""
+
 from pathlib import Path
 from subprocess import PIPE, run, CalledProcessError
 
