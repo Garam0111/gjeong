@@ -3,7 +3,7 @@
 Repository of bits of codes that originally written or adapted by Garam Jeong. Purposes of adaptation was to apply the original codes for a certain target data sturcture. 
 
   - Original: Originally written by Garam Jeong
-  - Adpated: Adapted from oroginal scripts. The source of original scripts and the major adaptation were marked at the head descirition of the script.
+  - Adpated: Adapted from scripts written by others. Their original scripts and the major adaptation were marked at the head descirition of the script.
 
 ## Projects summary:
  - COCOA (2024-2025): A longitudinal study on semantic learning of alphabet letters using visual and auditory stimuli before and after formal schooling.
