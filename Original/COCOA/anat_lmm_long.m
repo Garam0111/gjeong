@@ -3,31 +3,45 @@
 % Bernal-Rusiel J.L., Greve D.N., Reuter M., Fischl B., Sabuncu M.R., 2012. Statistical Analysis of Longitudinal Neuroimage Data with Linear Mixed Effects Models, NeuroImage 66C, pp. 249-260, 2012.
 % Bernal-Rusiel J.L., Greve D.N., Reuter M., Fischl B., Sabuncu M.R., 2013. Spatiotemporal Linear Mixed Effects Modeling for the Mass-univariate Analysis of Longitudinal Neuroimage Data, NeuroImage 81, pp 358–370, 2013. 
 
-%-------------------------------------------------------------------------------------------------
+% Prerequisit
+% QDEC table containing your meta data. i.e., sujbejct id, time 
+% Then preprocess your data using the following code lines in Freesurfer to create smoothed data
+
+% mris_preproc --qdec-long qdec.table.dat --target fsaverage --hemi lh --meas thickness --out lh.thickness.mgh
+% meausre options --meas : thickness, curv, volume, area
+
+% mri_surf2surf --hemi lh --s fsaverage --sval lh.thickness.mgh --tval lh.thickness_sm5.mgh --fwhm-trg 5 --cortex  --noreshape
+%-------------------------------------------------------------------------------------------------------------------------------
+
 % read the area data
-[Y_l,mri_l] = fs_read_Y('./lme/lh.curv_sm5.mgh');
-[Y_r,mri_r] = fs_read_Y('./lme/rh.curv_sm5.mgh');
+[Y_l,mri_l] = fs_read_Y('./lh.volume_sm5.mgh');
+[Y_r,mri_r] = fs_read_Y('./rh.volume_sm5.mgh');
 
 % create design matrix
-Qdec  = fReadQdec('task-Literacy_metadf.csv');
+Qdec  = fReadQdec('./metadf.csv');
 Qdec  = rmQdecCol(Qdec,1); % remove fsid
 sID   = Qdec(2:end,1);
 Qdec  = rmQdecCol(Qdec,1); % remove fsid-base
 M     = Qdec2num(Qdec); 
-time2 = M(:,1).^2;  % quadratic time term
-X     = [ones(length(M),1) M time2];
+X     = [ones(length(M),1) M];
 
-[X_l,Y_l,ni_l] = sortData(X,2,Y_l,sID);  % along the second column, time point
+% if you want to add time^2 term use theses:
+%time2 = M(:,1).^2;  % quadratic time term
+%X     = [ones(length(M),1) M time2];
+
+% sort data along the time point
+[X_l,Y_l,ni_l] = sortData(X,2,Y_l,sID);  
 [X_r,Y_r,ni_r] = sortData(X,2,Y_r,sID); 
 
 % load verices info
-lhsphere = fs_read_surf('/data/pt_02825/MPCDF/freesurfer/fsaverage/surf/lh.sphere'); 
-lhcortex = fs_read_label('/data/pt_02825/MPCDF/freesurfer/fsaverage/label/lh.cortex.label');
+lhsphere = fs_read_surf('./freesurfer/fsaverage/surf/lh.sphere'); 
+lhcortex = fs_read_label('./freesurfer/fsaverage/label/lh.cortex.label');
 
-rhsphere = fs_read_surf('/data/pt_02825/MPCDF/freesurfer/fsaverage/surf/rh.sphere'); 
-rhcortex = fs_read_label('/data/pt_02825/MPCDF/freesurfer/fsaverage/label/rh.cortex.label');
+rhsphere = fs_read_surf('./freesurfer/fsaverage/surf/rh.sphere'); 
+rhcortex = fs_read_label('./freesurfer/fsaverage/label/rh.cortex.label');
 
-% initial vertex-wise temporal covariance estimates
+% initial vertex-wise covariance estimates with 2 random effects
+% Y ~ time + (1+time|sub)
 [lhTh0,lhRe] = lme_mass_fit_EMinit(X_l,[1 2],Y_l,ni_l,lhcortex,3);
 [rhTh0,rhRe] = lme_mass_fit_EMinit(X_r,[1 2],Y_r,ni_r,rhcortex,3);
 
@@ -35,7 +49,7 @@ rhcortex = fs_read_label('/data/pt_02825/MPCDF/freesurfer/fsaverage/label/rh.cor
 [lhRgs, lhRgMeans] = lme_mass_RgGrow(lhsphere, lhRe, lhTh0, lhcortex, 2, 95);
 [rhRgs, rhRgMeans] = lme_mass_RgGrow(rhsphere, rhRe, rhTh0, rhcortex, 2, 95);
 
-% optional: compare the covariance and segmentation
+% optional: compare the covariance and segmentation (can be obmitted)
 surf.faces =  lhsphere.tri;
 surf.vertices =  lhsphere.coord';
 
@@ -44,7 +58,7 @@ set(p1,'facecolor','interp','edgecolor','none','facevertexcdata',lhTh0(1,:)');
 
 figure; p2 = patch(surf); set(p2,'facecolor','interp','edgecolor','none','facevertexcdata',lhRgMeans(1,:)');
 
-% fit the model (intercept, slope)
+% fit the model (intercept, slope) Y ~ time + (1+time|subject)
 lhstats = lme_mass_fit_Rgw(X_l,[1 2],Y_l,ni_l,lhTh0,lhRgs,lhsphere);
 rhstats = lme_mass_fit_Rgw(X_r,[1 2],Y_r,ni_r,rhTh0,rhRgs,rhsphere);
 
@@ -72,70 +86,53 @@ pass_ratio_r = length(dvtx_r)/length(rhcortex);
 % We choose the full model
 % Show the fixed effect (slope shared by the entire group): contrast matrix
 
-CM.C = [0,1,0]; % time
-CM2.C = [0,0,1]; % time quadratic
-CM3.C = [0, 1, -1]; % H0: The effect size of time and time quadratic are same.
+CM.C = [0,1]; % time
+%CM.C = [0,1,0] %slope
+%CM2.C = [0,0,1]; % time quadratic
+%CM3.C = [0, 1, -1]; % H0: The effect size of time and time quadratic are same.
 
 % F or Z test(vertex wise)
 F_lhstats  = lme_mass_F(lhstats,CM);
-F2_lhstats = lme_mass_F(lhstats,CM2);
-F3_lhstats = lme_mass_F(lhstats,CM3);
+%F2_lhstats = lme_mass_F(lhstats,CM2);
+%F3_lhstats = lme_mass_F(lhstats,CM3);
  
 F_rhstats  = lme_mass_F(rhstats,CM);
-F2_rhstats = lme_mass_F(rhstats,CM2);
-F3_rhstats = lme_mass_F(rhstats,CM3);
+%F2_rhstats = lme_mass_F(rhstats,CM2);
+%F3_rhstats = lme_mass_F(rhstats,CM3);
 
-% correction for multiple comparision (FDR2 - see freesurfer web)
-vx_l  = lme_mass_FDR2(F_lhstats.pval,F_lhstats.sgn,lhcortex,0.05,0);
-vx2_l = lme_mass_FDR2(F2_lhstats.pval,F2_lhstats.sgn,lhcortex,0.05,0);
-vx3_l = lme_mass_FDR2(F3_lhstats.pval,F3_lhstats.sgn,lhcortex,0.05,0);
+% vertex num, pvalue, threshold p
+[vx_r, pval, pth_r]  = lme_mass_FDR2(F_rhstats.pval,F_rhstats.sgn,rhcortex,0.05,0); % change to lh as needed
+%[vx2_r, pval2, pth2] = lme_mass_FDR2(F2_rhstats.pval,F2_rhstats.sgn,rhcortex,0.05,0);
+%[vx3_r, pval3, pth3] = lme_mass_FDR2(F3_rhstats.pval,F3_rhstats.sgn,rhcortex,0.05,0);
 
-vx_r  = lme_mass_FDR2(F_rhstats.pval,F_rhstats.sgn,rhcortex,0.05,0);
-vx2_r = lme_mass_FDR2(F2_rhstats.pval,F2_rhstats.sgn,rhcortex,0.05,0);
-vx3_r = lme_mass_FDR2(F3_rhstats.pval,F3_rhstats.sgn,rhcortex,0.05,0);
-
-
-% convert f statistics to z score (since degree of freedom of F test is 1)
-zvals_l      = sqrt(F_lhstats.F) .* F_lhstats.sgn; 
-F_lhstats.z  = zvals_l;                            % add to F_lhstats cell
-zvals2_l     = sqrt(F2_lhstats.F) .* F2_lhstats.sgn;
-F2_lhstats.z = zvals2_l;
-zvals3_l     = sqrt(F3_lhstats.F) .* F3_lhstats.sgn;
-F3_lhstats.z = zvals3_l;
-
-zvals_r = sqrt(F_rhstats.F) .* F_rhstats.sgn;
-F_rhstats.z = zvals_r;     
-zvals2_r = sqrt(F2_rhstats.F) .* F2_rhstats.sgn;
-F2_rhstats.z = zvals2_r;
-zvals3_r = sqrt(F3_rhstats.F) .* F3_rhstats.sgn;
-F3_rhstats.z = zvals3_r;
-
+% CAUTION!!! CHANGE THE NAME of metric and hemi
 % save uncorrected p values (valid variables: pval, fval, sig)
-fs_write_fstats(F_lhstats,mri_l,'./lme/lh_area_t_beta_pval.mgh','pval'); 
-fs_write_fstats(F_lhstats,mri_l,'./lme/lh_area_t_beta_f.mgh','fval');
-fs_write_fstats(F_lhstats,mri_l,'./lme/lh_area_beta_sign.mgh','sig');
+fs_write_fstats(F_lhstats,mri_l,'./lme/Ver_based_res/lin/mat_results/lh_area_t_pval.mgh','pval'); 
+fs_write_fstats(F_lhstats,mri_l,'./lme/Ver_based_res/lin/mat_results/lh_area_t_f.mgh','fval');
+fs_write_fstats(F_lhstats,mri_l,'./lme/Ver_based_res/lin/mat_results/lh_area_t_sign.mgh','sig');
 
-fs_write_fstats(F2_lhstats,mri_l,'./lme/lh_area_t2_beta_pval.mgh','pval'); 
-fs_write_fstats(F2_lhstats,mri_l,'./lme/lh_area_t2_beta_pval.mgh','pval'); 
-fs_write_fstats(F2_lhstats,mri_l,'./lme/lh_area_t2_beta_sign.mgh','sig');
+%fs_write_fstats(F2_lhstats,mri_l,'./lme/lh_area_t2_beta_pval.mgh','pval'); 
+%fs_write_fstats(F2_lhstats,mri_l,'./lme/lh_area_t2_beta_f.mgh','fval'); 
+%fs_write_fstats(F2_lhstats,mri_l,'./lme/lh_area_t2_beta_sign.mgh','sig');
 
-fs_write_fstats(F3_lhstats,mri_l,'./lme/lh_area_t-t2_beta_pval.mgh','pval'); 
-fs_write_fstats(F3_lhstats,mri_l,'./lme/lh_area_t-t2_beta_f.mgh','fval');
-fs_write_fstats(F3_lhstats,mri_l,'./lme/lh_area_t-t2_beta_sign.mgh','sig');
+%fs_write_fstats(F3_lhstats,mri_l,'./lme/lh_area_t-t2_beta_pval.mgh','pval'); 
+%fs_write_fstats(F3_lhstats,mri_l,'./lme/lh_area_t-t2_beta_f.mgh','fval');
+%fs_write_fstats(F3_lhstats,mri_l,'./lme/lh_area_t-t2_beta_sign.mgh','sig');
 
-fs_write_fstats(F_rhstats,mri_r,'./lme/rh_area_t_beta_pval.mgh','pval'); 
-fs_write_fstats(F_rhstats,mri_r,'./lme/rh_area_t_beta_f.mgh','fval');
-fs_write_fstats(F_rhstats,mri_r,'./lme/rh_area_beta_sign.mgh','sig');
+% CAUTION!!! CHANGE THE NAME of metric and hemi
+fs_write_fstats(F_rhstats,mri_r,'./lme/Ver_based_res/lin/mat_results/rh_area_t_beta_pval.mgh','pval'); 
+fs_write_fstats(F_rhstats,mri_r,'./lme/Ver_based_res/lin/mat_results/rh_area_t_beta_f.mgh','fval');
+fs_write_fstats(F_rhstats,mri_r,'./lme/Ver_based_res/lin/mat_results/rh_area_t_beta_sign.mgh','sig');
 
-fs_write_fstats(F2_rhstats,mri_r,'./lme/rh_area_t2_beta_pval.mgh','pval'); 
-fs_write_fstats(F2_rhstats,mri_r,'./lme/rh_area_t2_beta_pval.mgh','pval'); 
-fs_write_fstats(F2_rhstats,mri_r,'./lme/rh_area_t2_beta_sign.mgh','sig');
+%fs_write_fstats(F2_rhstats,mri_r,'./lme/rh_area_t2_beta_pval.mgh','pval'); 
+%fs_write_fstats(F2_rhstats,mri_r,'./lme/rh_area_t2_beta_f.mgh','fval'); 
+%fs_write_fstats(F2_rhstats,mri_r,'./lme/rh_area_t2_beta_sign.mgh','sig');
 
-fs_write_fstats(F3_rhstats,mri_r,'./lme/rh_area_t-t2_beta_pval.mgh','pval'); 
-fs_write_fstats(F3_rhstats,mri_r,'./lme/rh_area_t-t2_beta_f.mgh','fval');
-fs_write_fstats(F3_rhstats,mri_r,'./lme/rh_area_t-t2_beta_sign.mgh','sig');
+%fs_write_fstats(F3_rhstats,mri_r,'./lme/rh_area_t-t2_beta_pval.mgh','pval'); 
+%fs_write_fstats(F3_rhstats,mri_r,'./lme/rh_area_t-t2_beta_f.mgh','fval');
+%fs_write_fstats(F3_rhstats,mri_r,'./lme/rh_area_t-t2_beta_sign.mgh','sig');
 
-% save beta values
+% save beta values as mgh image
 nv_l =length(lhstats);
 nv_r =length(rhstats);
 
@@ -144,13 +141,13 @@ Beta2_l = zeros(1,nv_l);
 Beta2_r = zeros(1,nv_r);
 
 % thrid beta = time^2
-Beta3_l = zeros(1,nv_l);
-Beta3_r = zeros(1,nv_r);
+%Beta3_l = zeros(1,nv_l);
+%Beta3_r = zeros(1,nv_r);
 
 for i=1:nv_l
    if ~isempty(lhstats(i).Bhat)
       Beta2_l(i) = lhstats(i).Bhat(2);
-      Beta3_l(i) = lhstats(i).Bhat(3);
+      %Beta3_l(i) = lhstats(i).Bhat(3);
       
    end
 end
@@ -158,7 +155,7 @@ end
 for i=1:nv_r
    if ~isempty(rhstats(i).Bhat)
       Beta2_r(i) = rhstats(i).Bhat(2); 
-      Beta3_r(i) = rhstats(i).Bhat(3);
+      %Beta3_r(i) = rhstats(i).Bhat(3);
    end
 end
 
@@ -168,24 +165,59 @@ mri1_r = mri_r;
 mri1_l.volsz(4) = 1;
 mri1_r.volsz(4) = 1;
 
-fs_write_Y(Beta2_l,mri1_l,'area_t_beta_l.mgh');
-fs_write_Y(Beat2_r,mri1_r,'area_t_beta_r.mgh');
+% CAUTION!!! CHANGE THE NAME of metric and hemi
+fs_write_Y(Beta2_l,mri1_l,'./lme/Ver_based_res/lin/mat_results/curv_t_beta_l.mgh'); % time beta values saved (mgh)
+fs_write_Y(Beat2_r,mri1_r,'./lme/Ver_based_res/lin/mat_results/curv_t_beta_r.mgh');
 
-fs_write_Y(Beta3_l,mri1_l,'area_t2_beta_l.mgh');
-fs_write_Y(Beat3_r,mri1_r,'area_t2_beta_r.mgh');
+%fs_write_Y(Beta3_l,mri1_l,'area_t2_beta_l.mgh');
+%fs_write_Y(Beat3_r,mri1_r,'area_t2_beta_r.mgh');
 
 % correction for multiple comparision in both hemi
 P = [ F_lhstats.pval(lhcortex) F_rhstats.pval(rhcortex) ];
 G = [ F_lhstats.sgn(lhcortex) F_rhstats.sgn(rhcortex) ];
 [detvtx,sided_pval,pth] = lme_mass_FDR2(P,G,[],0.05,0);
-pcor = -log10(pth);
+% pcor = -log10(pth); % pcor is used to work in Freesurfer to plot the result
+
+%P2 = [F2_lhstats.pval(lhcortex) F2_rhstats.pval(rhcortex)];
+%G2 = [F2_lhstats.sgn(lhcortex) F2_rhstats.sgn(rhcortex)];
+%[detvtx2,sided_pval2,pth2] = lme_mass_FDR2(P2,G2,[],0.05,0);
+
+%P3 = [F3_lhstats.pval(lhcortex) F3_rhstats.pval(rhcortex)];
+%G3 = [F3_lhstats.sgn(lhcortex) F3_rhstats.sgn(rhcortex)];
+%[detvtx3,sided_pval3,pth3] = lme_mass_FDR2(P3,G3,[],0.05,0);
+
+% save pvalues which passed the fdr correction
+p_detvtx_lh = sided_pval(:,1:length(lhcortex));
+p_detvtx_rh = sided_pval(:,length(lhcortex)+1:end);
+
+% assign right signs
+p_detvtx_lh_sgn = p_detvtx_lh.*F_lhstats.sgn(lhcortex);
+p_detvtx_rh_sgn = p_detvtx_rh.*F_rhstats.sgn(rhcortex);
+
+p_l = zeros(1, length(lhstats));
+p_r = zeros(1, length(rhstats));
+
+p_l(lhcortex) = p_detvtx_lh_sgn;
+p_r(rhcortex) = p_detvtx_rh_sgn;
+
+mri2_l = mri_l;
+mri2_r = mri_r;
+
+mri2_l.volsz(4) = 1;
+mri2_r.volsz(4) = 1;
+
+% CAUTION!!! change the file name when you reanalze dependent on metric
+% It will be used to create cluster labels later
+fs_write_Y(p_l,mri2_l,'./lme/Ver_res_mat/lin/area_p_lh.mgh');
+fs_write_Y(p_r,mri2_r,'./lme/Ver_res_mat/lin/area_p_rh.mgh');
 
 % plot histogram of uncorrected pval
 histogram(sided_pval, 100);
 title('Uncorrected p-values across cortex');
 xlabel('p-value'); ylabel('Vertex count');
 
-% plot measured data of all sub along time points
+% Figure 
+% plot measured data of all sub along time points at a vertex
 % find the min p-val vertex
 minv_lh = find(F_lhstats.pval == min(F_lhstats.pval));
 minv_lh2 = find(F2_lhstats.pval == min(F2_rhstats.pval));
